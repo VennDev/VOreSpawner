@@ -27,15 +27,23 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
+use vennv\vapm\Promise;
 use vennv\vorespawner\data\DataManager;
 use vennv\vorespawner\event\VOreSpawnedEvent;
 use vennv\vorespawner\tile\OreSpawnerTile;
 use vennv\vapm\System;
+use Throwable;
 
 final class EventListener implements Listener {
 
+	/** @var array<string, Promise> */
+	private static array $promises = [];
+
 	private const RADIUS = 5; // The radius to check for spawners.
 
+	/**
+	 * @throws Throwable
+	 */
 	public function onDataPacketReceive(DataPacketReceiveEvent $event) : void {
 		$origin = $event->getOrigin();
 		$player = $origin->getPlayer();
@@ -46,12 +54,17 @@ final class EventListener implements Listener {
 			for ($x = -$radius; $x < $radius; $x++) {
 				for ($y = -$radius; $y < $radius; $y++) {
 					for ($z = -$radius; $z < $radius; $z++) {
+						$uid = $player->getUniqueId()->toString();
 						$tile = $player->getWorld()->getTile($player->getLocation()->add($x, $y, $z));
 
 						if ($tile instanceof OreSpawnerTile) {
-							System::setTimeout(function () use ($tile) : void {
-								$tile->onUpdate();
-							}, 1000);
+							if (!isset(self::$promises[$uid])) {
+								self::$promises[$uid] = Promise::c(function($resolve) use ($tile) : void {
+									$resolve($tile->onUpdate());
+								})->then(function() use ($uid) : void {
+									unset(self::$promises[$uid]);
+								});
+							}
 						}
 					}
 				}

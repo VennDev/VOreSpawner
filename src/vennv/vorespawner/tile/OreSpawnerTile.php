@@ -33,7 +33,7 @@ final class OreSpawnerTile extends Spawnable {
 
 	protected int $ticks = 0;
 
-	protected int $ticksGoal = 200;
+	protected int $ticksGoal = 150;
 
 	protected int $level = 0;
 
