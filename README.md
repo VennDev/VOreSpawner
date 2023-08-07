@@ -2,6 +2,14 @@
 - Plugin OreSpawner for PocketMine-PMMP 5
 - Giving your server exciting gameplay comes from placing ores spawn machines or so to speak, custom block types at your disposal.
 
+# How to install it ?
+- You should install LibVapmPMMP here: [LibVapmPMMP](https://poggit.pmmp.io/ci/VennDev/LibVapmPMMP/LibVapmPMMP)
+
+# Commands
+```
+/vorespawner or /vos - give <player> <type> <level> <amount>
+```
+
 # Config
 ```config
 ---
@@ -34,3 +42,7 @@ ore_spawner_types:
 
 ...
 ```
+
+# Credits
+- Email: pnam5005@gmail.com
+- Paypal: lifeboat909@gmail.com
