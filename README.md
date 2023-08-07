@@ -1,5 +1,6 @@
 # VOreSpawner
 - Plugin OreSpawner for PocketMine-PMMP 5
+- This is improved upgrade from an old project of mine. [Here](https://github.com/VennDev/OreSpawner)
 - Giving your server exciting gameplay comes from placing ores spawn machines or so to speak, custom block types at your disposal.
 
 # How to install it ?
