@@ -1,0 +1,18 @@
+name: VOreSpawner
+api: 5.0.0
+author: VennVDev
+main: vennv\vorespawner\VOreSpawner
+version: 1.0.5
+
+commands:
+  vorespawner:
+    description: VOreSpawner command
+    usage: /vorespawner give <player> <type> <level> <amount>
+    aliases: [vos]
+    permission: vorespawner.command
+    permission-message: You don't have permission to use this command.
+
+permissions:
+  vorespawner.command:
+    description: VOreSpawner command permission
+    default: op
