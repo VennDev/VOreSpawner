@@ -4,7 +4,7 @@
 ore_spawner_types:
   coal:
 
-    # Item to spawn
+    # This is the item that you will hold in your hand to represent that Spawner. In short, the item in hand to pose Spawner.
     item_data:
       item: "minecraft:coal_ore"
       name: "Coal Ore"
