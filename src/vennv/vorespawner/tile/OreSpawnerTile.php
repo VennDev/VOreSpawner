@@ -28,6 +28,7 @@ use pocketmine\item\ItemBlock;
 use pocketmine\item\StringToItemParser;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Server;
+use pocketmine\world\World;
 
 final class OreSpawnerTile extends Spawnable {
 
@@ -141,7 +142,11 @@ final class OreSpawnerTile extends Spawnable {
 		$random = $this->blocks[array_rand($this->blocks)];
 		$world = $this->getPosition()->getWorld();
 
-		$vector = $this->getPosition()->add(0, 1, 0)->asVector3();
+		$vector = $this->getPosition()->add(0, 1, 0);
+		if ($vector->getY() >= World::Y_MAX) {
+			return true;
+		}
+
 		if (!$world->getBlock($vector) instanceof Air) {
 			return true;
 		}
