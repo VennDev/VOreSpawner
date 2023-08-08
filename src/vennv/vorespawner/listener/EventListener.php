@@ -23,20 +23,22 @@ declare(strict_types = 1);
 namespace vennv\vorespawner\listener;
 
 use pocketmine\Server;
+use pocketmine\event\Listener;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\Listener;
-use vennv\vapm\Promise;
 use vennv\vorespawner\data\DataManager;
 use vennv\vorespawner\event\VOreSpawnedEvent;
 use vennv\vorespawner\tile\OreSpawnerTile;
+use vennv\vapm\Promise;
 use vennv\vapm\System;
 use Throwable;
 
 final class EventListener implements Listener {
 
-	/** @var array<string, Promise> */
+	/**
+	 * @var array<string, Promise>
+	 */
 	private static array $promises = [];
 
 	private const RADIUS = 5; // The radius to check for spawners.
@@ -48,25 +50,34 @@ final class EventListener implements Listener {
 		$origin = $event->getOrigin();
 		$player = $origin->getPlayer();
 
-		if ($player !== null && $player->isOnline()) {
-			$radius = self::RADIUS;
+		if ($player === null) {
+			return;
+		}
 
-			for ($x = -$radius; $x < $radius; $x++) {
-				for ($y = -$radius; $y < $radius; $y++) {
-					for ($z = -$radius; $z < $radius; $z++) {
-						$uid = $player->getUniqueId()->toString();
-						$tile = $player->getWorld()->getTile($player->getLocation()->add($x, $y, $z));
+		if (!$player->isOnline()) {
+			return;
+		}
 
-						if ($tile instanceof OreSpawnerTile) {
-							if (!isset(self::$promises[$uid])) {
-								self::$promises[$uid] = Promise::c(function($resolve) use ($tile) : void {
-									$resolve($tile->onUpdate());
-								})->then(function() use ($uid) : void {
-									unset(self::$promises[$uid]);
-								});
-							}
-						}
+		$radius = self::RADIUS;
+
+		for ($x = -$radius; $x < $radius; $x++) {
+			for ($y = -$radius; $y < $radius; $y++) {
+				for ($z = -$radius; $z < $radius; $z++) {
+					$tile = $player->getWorld()->getTile($player->getLocation()->add($x, $y, $z));
+
+					if (!$tile instanceof OreSpawnerTile) {
+						continue;
 					}
+
+					if (isset(self::$promises[$tile->getId()])) {
+						continue;
+					}
+
+					self::$promises[$tile->getId()] = Promise::c(function($resolve) use ($tile) : void {
+						$resolve($tile->onUpdate());
+					})->then(function () use ($tile) : void {
+						unset(self::$promises[$tile->getId()]);
+					});
 				}
 			}
 		}
@@ -81,40 +92,43 @@ final class EventListener implements Listener {
 		$inventory = $player->getInventory();
 		$itemHand = $inventory->getItemInHand();
 
-		if (DataManager::getOreSpawnerType($itemHand) !== null) {
-			$type = DataManager::getOreSpawnerType($itemHand);
-			$level = DataManager::getOreSpawnerLevel($itemHand);
-
-			$data = DataManager::getDataSpawner($type);
-
-			if ($data === null) {
-				return;
-			}
-
-			$dataLevel = DataManager::getSpawnerLevelData($type, $level);
-
-			if ($dataLevel === null) {
-				return;
-			}
-
-			$speed = (int)$dataLevel["speed"];
-
-			$vectorSpawn = $position->asVector3()->add(0, 1, 0);
-
-			$tile = new OreSpawnerTile($world, $vectorSpawn);
-			$tile->setSpeed($speed);
-			$tile->setType($type);
-			$tile->setLevel($level);
-			$tile->setBlocks($data["blocks"]);
-
-			// Delay to tile spawn when player place the spawner.
-			System::setTimeout(function () use ($world, $tile) : void {
-				$world->addTile($tile);
-			}, 500);
-
-			$eventSpawned = new VOreSpawnedEvent($player, $type, $level, $vectorSpawn);
-			$eventSpawned->call();
+		if (DataManager::getOreSpawnerType($itemHand) === null) {
+			return;
 		}
+
+		$type = DataManager::getOreSpawnerType($itemHand);
+		$level = DataManager::getOreSpawnerLevel($itemHand);
+
+		$data = DataManager::getDataSpawner($type);
+
+		if ($data === null) {
+			return;
+		}
+
+		$dataLevel = DataManager::getSpawnerLevelData($type, $level);
+
+		if ($dataLevel === null) {
+			return;
+		}
+
+		$speed = (int)$dataLevel["speed"];
+
+		$vectorSpawn = $position->asVector3()->add(0, 1, 0);
+
+		$tile = new OreSpawnerTile($world, $vectorSpawn);
+		$tile->setSpeed($speed);
+		$tile->setType($type);
+		$tile->setLevel($level);
+		$tile->setBlocks($data["blocks"]);
+		$tile->setId($position->getX() . ":" . $position->getY() . ":" . $position->getZ());
+
+		// Delay to tile spawn when player place the spawner.
+		System::setTimeout(function () use ($world, $tile) : void {
+			$world->addTile($tile);
+		}, 500);
+
+		$eventSpawned = new VOreSpawnedEvent($player, $type, $level, $vectorSpawn);
+		$eventSpawned->call();
 	}
 
 	public function onBlockBreak(BlockBreakEvent $event) : void {
@@ -126,27 +140,31 @@ final class EventListener implements Listener {
 
 		$tile = $world->getTile($position->asVector3());
 
-		if ($tile instanceof OreSpawnerTile) {
-			$type = $tile->getType();
-			$level = $tile->getLevel();
-
-			$data = DataManager::getDataSpawner($type);
-
-			if ($data !== null) {
-				$item = DataManager::getOreSpawner($type, $level);
-
-				if ($item !== null) {
-					$event->setDrops([]);
-					$event->setXpDropAmount(0);
-
-					$player->getInventory()->addItem($item);
-				} else {
-					Server::getInstance()->getLogger()->error("Error while getting item from spawner, please report this error to the developer.");
-				}
-			}
-
-			$world->removeTile($tile);
+		if (!$tile instanceof OreSpawnerTile) {
+			return;
 		}
+
+		$type = $tile->getType();
+		$level = $tile->getLevel();
+
+		$data = DataManager::getDataSpawner($type);
+
+		if ($data === null) {
+			return;
+		}
+
+		$item = DataManager::getOreSpawner($type, $level);
+
+		if ($item !== null) {
+			$event->setDrops([]);
+			$event->setXpDropAmount(0);
+
+			$player->getInventory()->addItem($item);
+		} else {
+			Server::getInstance()->getLogger()->error("Error while getting item from spawner, please report this error to the developer.");
+		}
+
+		$world->removeTile($tile);
 	}
 
 }

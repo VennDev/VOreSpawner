@@ -25,12 +25,11 @@ namespace vennv\vorespawner;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
 use pocketmine\block\tile\TileFactory;
-use vennv\vapm\VapmPMMP;
 use vennv\vorespawner\data\DataManager;
 use vennv\vorespawner\listener\EventListener;
 use vennv\vorespawner\tile\OreSpawnerTile;
+use vennv\vapm\VapmPMMP;
 
 final class VOreSpawner extends PluginBase {
 

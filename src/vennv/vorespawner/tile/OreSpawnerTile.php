@@ -33,7 +33,7 @@ final class OreSpawnerTile extends Spawnable {
 
 	protected int $ticks = 0;
 
-	protected int $ticksGoal = 150;
+	protected int $ticksGoal = 500;
 
 	protected int $level = 0;
 
@@ -45,6 +45,8 @@ final class OreSpawnerTile extends Spawnable {
 	protected array $blocks = [];
 
 	protected string $type = "";
+
+	protected string $id = "OreSpawnerTile";
 
 	public function getTicks() : int {
 		return $this->ticks;
@@ -90,13 +92,26 @@ final class OreSpawnerTile extends Spawnable {
 		$this->type = $type;
 	}
 
-	protected function addAdditionalSpawnData(CompoundTag $nbt) : void {
+	public function getId() : string {
+		return $this->id;
+	}
+
+	public function setId(string $id) : void {
+		$this->id = $id;
+	}
+
+	protected function initCompoundTag(CompoundTag $nbt) : void {
 		$nbt->setInt("ticks", $this->ticks);
 		$nbt->setInt("ticksGoal", $this->ticksGoal);
 		$nbt->setInt("level", $this->level);
 		$nbt->setInt("speed", $this->speed);
 		$nbt->setString("blocks", json_encode($this->blocks));
 		$nbt->setString("type", $this->type);
+		$nbt->setString("idTile", $this->id);
+	}
+
+	protected function addAdditionalSpawnData(CompoundTag $nbt) : void {
+		$this->initCompoundTag($nbt);
 	}
 
 	public function readSaveData(CompoundTag $nbt) : void {
@@ -106,43 +121,44 @@ final class OreSpawnerTile extends Spawnable {
 		$this->speed = $nbt->getInt("speed");
 		$this->blocks = json_decode($nbt->getString("blocks"), true);
 		$this->type = $nbt->getString("type");
+		$this->id = $nbt->getString("idTile");
 	}
 
 	protected function writeSaveData(CompoundTag $nbt) : void {
-		$nbt->setInt("ticks", $this->ticks);
-		$nbt->setInt("ticksGoal", $this->ticksGoal);
-		$nbt->setInt("level", $this->level);
-		$nbt->setInt("speed", $this->speed);
-		$nbt->setString("blocks", json_encode($this->blocks));
-		$nbt->setString("type", $this->type);
+		$this->initCompoundTag($nbt);
 	}
 
 	public function onUpdate() : bool {
 		if ($this->closed) {
-			return false;
+			return true;
 		}
 
-		if (($this->ticks += $this->speed) >= $this->ticksGoal) {
-			$random = $this->blocks[array_rand($this->blocks)];
-			$world = $this->getPosition()->getWorld();
-
-			$vector = $this->getPosition()->add(0, 1, 0)->asVector3();
-			if ($world->getBlock($vector) instanceof Air) {
-				$block = StringToItemParser::getInstance()->parse($random);
-
-				if (!$block instanceof ItemBlock) {
-					Server::getInstance()->getLogger()->warning("Invalid block in OreSpawnerTile: " . $random);
-					return true;
-				}
-
-				$block = $block->getBlock();
-				$world->setBlock($vector, $block);
-			}
-
-			$this->ticks = 0;
+		if ($this->ticks < $this->ticksGoal) {
+			$this->ticks += $this->speed;
+			return true;
 		}
 
-		return true;
+		$random = $this->blocks[array_rand($this->blocks)];
+		$world = $this->getPosition()->getWorld();
+
+		$vector = $this->getPosition()->add(0, 1, 0)->asVector3();
+		if (!$world->getBlock($vector) instanceof Air) {
+			return true;
+		}
+
+		$block = StringToItemParser::getInstance()->parse($random);
+
+		if (!$block instanceof ItemBlock) {
+			Server::getInstance()->getLogger()->warning("Invalid block in OreSpawnerTile: " . $random);
+			return true;
+		}
+
+		$block = $block->getBlock();
+		$world->setBlock($vector, $block);
+
+		$this->ticks = 0;
+
+		return false;
 	}
 
 }
