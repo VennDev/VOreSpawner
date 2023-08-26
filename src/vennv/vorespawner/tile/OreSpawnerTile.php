@@ -130,9 +130,7 @@ final class OreSpawnerTile extends Spawnable {
 	}
 
 	public function onUpdate() : bool {
-		if ($this->closed) {
-			return true;
-		}
+		if ($this->closed) return true;
 
 		if ($this->ticks < $this->ticksGoal) {
 			$this->ticks += $this->speed;
@@ -143,13 +141,9 @@ final class OreSpawnerTile extends Spawnable {
 		$world = $this->getPosition()->getWorld();
 
 		$vector = $this->getPosition()->add(0, 1, 0);
-		if ($vector->getY() >= World::Y_MAX) {
-			return true;
-		}
+		if ($vector->getY() >= World::Y_MAX) return true;
 
-		if (!$world->getBlock($vector) instanceof Air) {
-			return true;
-		}
+		if (!$world->getBlock($vector) instanceof Air) return true;
 
 		$block = StringToItemParser::getInstance()->parse($random);
 
