@@ -24,6 +24,7 @@ namespace vennv\vorespawner\listener;
 
 use pocketmine\block\Air;
 use pocketmine\math\Facing;
+use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\event\Listener;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -86,8 +87,10 @@ final class EventListener implements Listener {
 		$itemHand = $event->getItem();
 		$block = $event->getBlockAgainst();
 
-		$vector3 = $block->getPosition()->floor();
-		$world = $player->getWorld();
+		$sendError = function ($event, $player) : void {
+			$player->sendMessage(DataManager::getConfig()->get('wrong_position'));
+			$event->cancel();
+		};
 
 		if (DataManager::getOreSpawnerType($itemHand) === null) return;
 
@@ -99,6 +102,30 @@ final class EventListener implements Listener {
 
 		if ($data === null || $dataLevel === null) return;
 
+		$world = $player->getWorld();
+		$vector3 = $block->getPosition()->floor();
+		$vector3->y += 1;
+
+		$samples = [
+			new Vector3($vector3->getX(), $vector3->getY() - 2, $vector3->getZ()),
+			new Vector3($vector3->getX(), $vector3->getY() - 1, $vector3->getZ()),
+			new Vector3($vector3->getX(), $vector3->getY(), $vector3->getZ())
+		];
+
+		// Check if the player is placing the spawner in the right position.
+		foreach ($samples as $sample) {
+			if ($world->getTile($sample) !== null) {
+				$sendError($event, $player);
+				return;
+			}
+		}
+
+		$blockAt = $world->getBlock($vector3);
+		if (!$blockAt instanceof Air) {
+			$sendError($event, $player);
+			return;
+		}
+
 		$speed = (int)$dataLevel["speed"];
 
 		$tile = new OreSpawnerTile($world, $vector3);
@@ -108,6 +135,7 @@ final class EventListener implements Listener {
 		$tile->setBlocks($data["blocks"]);
 		$tile->setId($vector3->getX() . ":" . $vector3->getY() . ":" . $vector3->getZ());
 
+		// delay the spawn of the ore.
 		System::setTimeout(function () use ($world, $tile) : void {
 			$world->addTile($tile);
 		}, 500);
