@@ -17,6 +17,9 @@
 ```config
 ---
 
+# Messages
+wrong_position: "You can't place the Spawner here!"
+
 # Types of OreSpawner
 ore_spawner_types:
   coal:
@@ -44,6 +47,7 @@ ore_spawner_types:
         speed: 3 # Speed of spawn
 
 ...
+
 ```
 
 # Credits
