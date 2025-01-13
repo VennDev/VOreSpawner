@@ -1,0 +1,5 @@
+{
+    "require": {
+        "vennv/vapm-pmmp": "^2.5"
+    }
+}

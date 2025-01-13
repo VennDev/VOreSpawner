@@ -1,7 +1,7 @@
 <?php
 
 /**
- * VJesusBucket - PocketMine plugin.
+ * VOreSpawner - PocketMine plugin.
  * Copyright (C) 2023 - 2025 VennDev
  *
  * This program is free software: you can redistribute it and/or modify

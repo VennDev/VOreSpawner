@@ -1,7 +1,7 @@
 <?php
 
 /**
- * VJesusBucket - PocketMine plugin.
+ * VOreSpawner - PocketMine plugin.
  * Copyright (C) 2023 - 2025 VennDev
  *
  * This program is free software: you can redistribute it and/or modify
@@ -35,6 +35,10 @@ final class DataManager {
 	public static function getConfig() : Config {
 		return VOreSpawner::getInstance()->getConfig();
 	}
+
+	public static function getUpdateInterval() : int {
+        return self::getConfig()->get("update_interval", 400) * 20;
+    }
 
 	public static function getDataSpawner(string $type) : ?array {
 		$types = self::getConfig()->get("ore_spawner_types");
