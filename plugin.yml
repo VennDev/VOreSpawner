@@ -2,7 +2,7 @@ name: VOreSpawner
 api: 5.0.0
 author: VennVDev
 main: vennv\vorespawner\VOreSpawner
-version: 1.0.6
+version: 1.0.7
 
 commands:
   vorespawner:
