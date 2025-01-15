@@ -1,7 +1,7 @@
 <?php
 
 /**
- * VJesusBucket - PocketMine plugin.
+ * VOreSpawner - PocketMine plugin.
  * Copyright (C) 2023 - 2025 VennDev
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,6 @@ declare(strict_types = 1);
 namespace vennv\vorespawner\listener;
 
 use pocketmine\block\Air;
-use pocketmine\math\Facing;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\event\Listener;
@@ -88,7 +87,7 @@ final class EventListener implements Listener {
 		$block = $event->getBlockAgainst();
 
 		$sendError = function ($event, $player) : void {
-			$player->sendMessage(DataManager::getConfig()->get('wrong_position'));
+			$player->sendMessage(DataManager::getConfig()->getNested('messages.wrong_position'));
 			$event->cancel();
 		};
 
@@ -99,6 +98,8 @@ final class EventListener implements Listener {
 
 		$data = DataManager::getDataSpawner($type);
 		$dataLevel = DataManager::getSpawnerLevelData($type, $level);
+		$updateInterval = DataManager::getUpdateInterval();
+
 
 		if ($data === null || $dataLevel === null) return;
 
@@ -131,14 +132,16 @@ final class EventListener implements Listener {
 		$tile = new OreSpawnerTile($world, $vector3);
 		$tile->setSpeed($speed);
 		$tile->setType($type);
+		$tile->setOwner($player->getName());
 		$tile->setLevel($level);
+		$tile->setTicksGoal($updateInterval);
 		$tile->setBlocks($data["blocks"]);
 		$tile->setId($vector3->getX() . ":" . $vector3->getY() . ":" . $vector3->getZ());
 
 		// delay the spawn of the ore.
 		System::setTimeout(function () use ($world, $tile) : void {
 			$world->addTile($tile);
-		}, 500);
+		}, 60);
 
 		$eventSpawned = new VOreSpawnedEvent($player, $type, $level, $vector3);
 		$eventSpawned->call();
@@ -154,6 +157,14 @@ final class EventListener implements Listener {
 		$tile = $world->getTile($position->asVector3());
 
 		if (!$tile instanceof OreSpawnerTile) return;
+
+		$owner = $tile->getOwner();
+
+		if ($owner !== $player->getName()) {
+			$player->sendMessage(DataManager::getConfig()->getNested('messages.no_permission'));
+			$event->cancel();
+			return;
+		}
 
 		$type = $tile->getType();
 		$level = $tile->getLevel();
