@@ -1,5 +1,8 @@
 ---
 
+# Radius of the spawner
+radius: 5 # Radius in blocks around the spawner where it can operate
+
 # Update interval in seconds (will be converted to ticks internally: 1 second = 20 ticks)
 update_interval: 20 # Spawner action interval in seconds
 

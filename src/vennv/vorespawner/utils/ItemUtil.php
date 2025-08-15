@@ -1,34 +1,48 @@
 <?php
 
-/**
- * VOreSpawner - PocketMine plugin.
- * Copyright (C) 2023 - 2025 VennDev
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace vennv\vorespawner\utils;
 
+use Generator;
+use Throwable;
 use pocketmine\item\Item;
+use pocketmine\player\Player;
 use pocketmine\item\StringToItemParser;
 
-final class ItemUtil {
+final class ItemUtil
+{
 
-	public static function getItemFromString(string $string) : ?Item {
-		return StringToItemParser::getInstance()->parse($string);
-	}
+    /**
+     * Converts a string representation of an item into an Item object.
+     *
+     * @param string $string The string representation of the item.
+     * @return Item|null Returns the Item object if successful, or null if parsing fails.
+     */
+    public static function getItemFromString(string $string): ?Item
+    {
+        return StringToItemParser::getInstance()->parse($string);
+    }
 
+    /**
+     * Gives a specified amount of an item to a player.
+     *
+     * @param Player $player The player to give the item to.
+     * @param Item $item The item to give.
+     * @param int $amount The amount of the item to give.
+     * @return Generator<bool> Returns true if successful, false if it fails to add the item to the player's inventory.
+     */
+    public static function giveSpawnerItemToPlayer(Player $player, Item $item, int $amount): Generator
+    {
+        for ($i = 0; $i < $amount; $i++) {
+            try {
+                $player->getInventory()->addItem($item);
+            } catch (Throwable) {
+                return false;
+            }
+            yield;
+        }
+        return true;
+    }
 }
+
