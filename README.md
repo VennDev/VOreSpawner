@@ -11,7 +11,7 @@
 ```
 
 # Config
-```config
+```yaml
 ---
 
 # Radius of the spawner
