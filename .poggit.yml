@@ -6,7 +6,10 @@ projects:
   VOreSpawner:
     path: ""
     libs:
-      - src: VennDev/LibVapmPMMP/LibVapmPMMP
-        version: ^2.5.6
+      - src: vosaka-php/vosaka/vosaka
+        version: ^1.9.0
+        branch: "main"
+      - src: vosaka-php/vosaka-ct-pmmp/vosaka-ct-pmmp
+        version: ^1.0.0
         branch: "main"
 ...
