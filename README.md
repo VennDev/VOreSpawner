@@ -14,14 +14,21 @@
 ```config
 ---
 
+# Radius of the spawner
+radius: 5 # Radius in blocks around the spawner where it can operate
+
+# Update interval in seconds (will be converted to ticks internally: 1 second = 20 ticks)
+update_interval: 20 # Spawner action interval in seconds
+
 # Messages
-wrong_position: "You can't place the Spawner here!"
+messages:
+  wrong_position: "You can't place the Spawner here!"
+  no_permission: "You do not own this OreSpawner to be able to break it!"
 
 # Types of OreSpawner
 ore_spawner_types:
   coal:
-
-    # This is the item that you will hold in your hand to represent that Spawner. In short, the item in hand to pose Spawner.
+    # This is the item that you will hold in your hand to represent the Spawner. In short, the item in hand to pose as the Spawner.
     item_data:
       item: "minecraft:coal_ore"
       name: "Coal Ore"
@@ -29,22 +36,42 @@ ore_spawner_types:
         - "Coal Ore"
         - "Level: %level%"
 
-    # Block to spawn
+    # Blocks to spawn
     blocks:
       - "minecraft:stone"
       - "minecraft:coal_ore"
 
-    # Spawn level
+    # Spawn levels and their respective speeds
+    # Speed determines how quickly the spawner operates:
+    # - Each level increases the speed of ticking.
+    # - Speed affects the time taken for the spawner to perform its action:
+    #     Real-time (seconds) = (default-interval / speed) i..e  20 / 2 = 10 seconds
     levels:
       1:
-        speed: 1 # Speed of spawn
+        speed: 1 # Default speed, uses full interval time.
       2:
-        speed: 2 # Speed of spawn
+        speed: 2 # Halves the time required.
       3:
-        speed: 3 # Speed of spawn
+        speed: 3 # Reduces time to one-third of the default interval.
 
-...
+  diamond:
+    item_data:
+      item: "minecraft:light_blue_glazed_terracotta"
+      name: "Diamond Ore"
+      lore:
+        - "Diamond Ore"
+        - "Level: %level%"
 
+    # Blocks to spawn
+    blocks:
+      - "minecraft:diamond_ore"
+    levels:
+      1:
+        speed: 1
+      2:
+        speed: 2
+      3:
+        speed: 3 
 ```
 
 # Credits
