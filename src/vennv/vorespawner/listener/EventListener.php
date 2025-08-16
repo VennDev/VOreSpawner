@@ -18,7 +18,6 @@ use venndev\vosaka\VOsaka;
 use vennv\vorespawner\data\DataManager;
 use vennv\vorespawner\event\VOreSpawnedEvent;
 use vennv\vorespawner\tile\OreSpawnerTile;
-use vennv\vorespawner\VOreSpawner;
 
 final class EventListener implements Listener
 {
@@ -108,16 +107,28 @@ final class EventListener implements Listener
         $tile->setLevel($level);
         $tile->setTicksGoal($updateInterval);
         $tile->setBlocks($data["blocks"]);
-        $tile->setId($vector3->getX() . ":" . $vector3->getY() . ":" . $vector3->getZ());
+
+        $x = $vector3->getX();
+        $y = $vector3->getY();
+        $z = $vector3->getZ();
+        $vector3Str = "{$x}:{$y}:{$z}";
+        $tile->setId($vector3Str);
 
         $eventSpawned = new VOreSpawnedEvent($player, $type, $level, $vector3);
         $eventSpawned->call();
 
+        if ($eventSpawned->isCancelled()) {
+            $event->cancel();
+        }
+
+
         // delay the spawn of the ore.
-        VOsaka::spawn(function () use ($world, $tile, $eventSpawned): Generator {
+        VOsaka::spawn(function () use ($world, $tile, $eventSpawned, $type, $level, $player): Generator {
             yield Sleep::new(0.6);
 
             if ($eventSpawned->isCancelled()) {
+                $item = DataManager::getOreSpawner($type, $level);
+                $player->getInventory()->addItem($item);
                 return;
             }
 
