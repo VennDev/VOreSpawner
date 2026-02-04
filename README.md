@@ -1,3 +1,7 @@
+(This project has been discontinued)
+I allow you to copy or develop it as you see fit. But not within this repository. Thanks to everyone who has come and gone.
+
+
 <img src="https://static.wikia.nocookie.net/minecraft_gamepedia/images/3/35/Caves_%26_Cliffs_Ores.png" alt="ReallyCheat-Premium" height="200" width="400" />
 
 # VOreSpawner
